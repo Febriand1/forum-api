@@ -35,14 +35,12 @@ const CommentRepository = require('../Domains/comments/CommentRepository');
 const CommentRepositoryPostgres = require('./repository/CommentRepositoryPostgres');
 const AddCommentUseCase = require('../Applications/use_case/AddCommentUseCase');
 const DeleteCommentUseCase = require('../Applications/use_case/DeleteCommentUseCase');
-const ValidationCommentUseCase = require('../Applications/use_case/ValidationCommentUseCase');
 
 // replies
 const ReplyRepository = require('../Domains/replies/ReplyRepository');
 const ReplyRepositoryPostgres = require('./repository/ReplyRepositoryPostgres');
 const AddReplyUseCase = require('../Applications/use_case/AddReplyUseCase');
 const DeleteReplyUseCase = require('../Applications/use_case/DeleteReplyUseCase');
-const ValidationReplyUseCase = require('../Applications/use_case/ValidationReplyUseCase');
 
 // creating container
 const container = createContainer();
@@ -279,23 +277,6 @@ container.register([
                     name: 'commentRepository',
                     internal: CommentRepository.name,
                 },
-                {
-                    name: 'validationCommentUseCase',
-                    internal: ValidationCommentUseCase.name,
-                },
-            ],
-        },
-    },
-    {
-        key: ValidationCommentUseCase.name,
-        Class: ValidationCommentUseCase,
-        parameter: {
-            injectType: 'destructuring',
-            dependencies: [
-                {
-                    name: 'commentRepository',
-                    internal: CommentRepository.name,
-                },
             ],
         },
     },
@@ -337,23 +318,6 @@ container.register([
                 {
                     name: 'commentRepository',
                     internal: CommentRepository.name,
-                },
-                {
-                    name: 'validationReplyUseCase',
-                    internal: ValidationReplyUseCase.name,
-                },
-            ],
-        },
-    },
-    {
-        key: ValidationReplyUseCase.name,
-        Class: ValidationReplyUseCase,
-        parameter: {
-            injectType: 'destructuring',
-            dependencies: [
-                {
-                    name: 'replyRepository',
-                    internal: ReplyRepository.name,
                 },
             ],
         },
