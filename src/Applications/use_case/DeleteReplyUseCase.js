@@ -5,12 +5,10 @@ class DeleteReplyUseCase {
         replyRepository,
         threadRepository,
         commentRepository,
-        validationReplyUseCase,
     }) {
         this._replyRepository = replyRepository;
         this._threadRepository = threadRepository;
         this._commentRepository = commentRepository;
-        this._validationReplyUseCase = validationReplyUseCase;
     }
 
     async execute(useCasePayload) {
@@ -21,17 +19,21 @@ class DeleteReplyUseCase {
             replyId,
             owner,
         });
-        await this._threadRepository.verifyAvailableThread(
-            deleteReply.threadId
-        );
-        await this._commentRepository.getCommentOwnerById(
-            deleteReply.commentId
-        );
-        await this._validationReplyUseCase.checkAvailabilityOwnerReply(
-            deleteReply.replyId,
-            deleteReply.owner
-        );
+
+        await this._verifyPayload(deleteReply);
         return this._replyRepository.deleteReply(deleteReply.replyId);
+    }
+
+    async _verifyPayload(payload) {
+        const { threadId, commentId, replyId, owner } = payload;
+
+        await this._threadRepository.verifyAvailableThread(threadId);
+        await this._commentRepository.getCommentOwnerById(commentId);
+        const reply = await this._replyRepository.getReplyOwnerById(replyId);
+
+        if (reply.owner !== owner) {
+            throw new Error('VALIDATION_REPLY.NOT_THE_OWNER');
+        }
     }
 }
 

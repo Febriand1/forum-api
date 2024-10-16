@@ -1,7 +1,6 @@
 const DeleteCommentUseCase = require('../DeleteCommentUseCase');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
-const ValidationCommentUseCase = require('../ValidationCommentUseCase');
 
 describe('DeleteCommentUseCase', () => {
     it('should orchestrating the delete comment action correctly', async () => {
@@ -15,24 +14,25 @@ describe('DeleteCommentUseCase', () => {
         // mock dependency
         const commentRepository = new CommentRepository();
         const threadRepository = new ThreadRepository();
-        const validationCommentUseCase = new ValidationCommentUseCase(
-            commentRepository
-        );
 
         // mock function
         threadRepository.verifyAvailableThread = jest.fn(() =>
             Promise.resolve(true)
         );
-        validationCommentUseCase.checkAvailabilityOwnerComment = jest.fn(() =>
-            Promise.resolve()
+
+        commentRepository.getCommentOwnerById = jest.fn(() =>
+            Promise.resolve({
+                id: 'comment-123',
+                owner: 'user-123',
+            })
         );
+
         commentRepository.deleteComment = jest.fn(() => Promise.resolve(true));
 
         // create use case instance
         const deleteCommentUseCase = new DeleteCommentUseCase({
             commentRepository,
             threadRepository,
-            validationCommentUseCase,
         });
 
         // Action
@@ -42,9 +42,9 @@ describe('DeleteCommentUseCase', () => {
         expect(threadRepository.verifyAvailableThread).toBeCalledWith(
             useCasePayload.threadId
         );
-        expect(
-            validationCommentUseCase.checkAvailabilityOwnerComment
-        ).toBeCalledWith(useCasePayload.commentId, useCasePayload.owner);
+        expect(commentRepository.getCommentOwnerById).toBeCalledWith(
+            useCasePayload.commentId
+        );
         expect(commentRepository.deleteComment).toBeCalledWith(
             useCasePayload.commentId
         );
@@ -57,24 +57,16 @@ describe('DeleteCommentUseCase', () => {
         // mock dependency
         const commentRepository = new CommentRepository();
         const threadRepository = new ThreadRepository();
-        const validationCommentUseCase = new ValidationCommentUseCase(
-            commentRepository
-        );
 
         // mock function
-        threadRepository.verifyAvailableThread = jest.fn(() =>
-            Promise.resolve()
-        );
-        validationCommentUseCase.checkAvailabilityOwnerComment = jest.fn(() =>
-            Promise.resolve()
-        );
-        commentRepository.deleteComment = jest.fn(() => Promise.resolve());
+        threadRepository.verifyAvailableThread = jest.fn();
+        commentRepository.getCommentOwnerById = jest.fn();
+        commentRepository.deleteComment = jest.fn();
 
         // create use case instance
         const deleteCommentUseCase = new DeleteCommentUseCase({
             commentRepository,
             threadRepository,
-            validationCommentUseCase,
         });
 
         // Action & Assert
@@ -84,9 +76,7 @@ describe('DeleteCommentUseCase', () => {
 
         // Assert
         expect(threadRepository.verifyAvailableThread).not.toBeCalledWith();
-        expect(
-            validationCommentUseCase.checkAvailabilityOwnerComment
-        ).not.toBeCalledWith();
+        expect(commentRepository.getCommentOwnerById).not.toBeCalledWith();
         expect(commentRepository.deleteComment).not.toBeCalledWith();
     });
 
@@ -100,24 +90,20 @@ describe('DeleteCommentUseCase', () => {
 
         const commentRepository = new CommentRepository();
         const threadRepository = new ThreadRepository();
-        const validationCommentUseCase = new ValidationCommentUseCase(
-            commentRepository
-        );
 
         // mock function
         threadRepository.verifyAvailableThread = jest.fn(() =>
+            Promise.resolve(false)
+        );
+        commentRepository.getCommentOwnerById = jest.fn(() =>
             Promise.resolve()
         );
-        validationCommentUseCase.checkAvailabilityOwnerComment = jest.fn(() =>
-            Promise.resolve()
-        );
-        commentRepository.deleteComment = jest.fn(() => Promise.resolve());
+        commentRepository.deleteComment = jest.fn(() => Promise.resolve(false));
 
         // create use case instance
         const deleteCommentUseCase = new DeleteCommentUseCase({
             commentRepository,
             threadRepository,
-            validationCommentUseCase,
         });
 
         // Action & Assert
@@ -129,9 +115,52 @@ describe('DeleteCommentUseCase', () => {
 
         // Assert
         expect(threadRepository.verifyAvailableThread).not.toBeCalledWith();
-        expect(
-            validationCommentUseCase.checkAvailabilityOwnerComment
-        ).not.toBeCalledWith();
+        expect(commentRepository.getCommentOwnerById).not.toBeCalledWith();
+        expect(commentRepository.deleteComment).not.toBeCalledWith();
+    });
+
+    it('should throw error when user is not the owner', async () => {
+        // Arrange
+        const useCasePayload = {
+            threadId: 'thread-123',
+            commentId: 'comment-123',
+            owner: 'user-123',
+        };
+
+        const commentRepository = new CommentRepository();
+        const threadRepository = new ThreadRepository();
+
+        threadRepository.verifyAvailableThread = jest.fn(() =>
+            Promise.resolve(true)
+        );
+
+        commentRepository.getCommentOwnerById = jest.fn(() =>
+            Promise.resolve({
+                id: 'comment-123',
+                owner: 'user-456',
+            })
+        );
+
+        commentRepository.deleteComment = jest.fn(() => Promise.resolve(false));
+
+        // create use case instance
+        const deleteCommentUseCase = new DeleteCommentUseCase({
+            commentRepository,
+            threadRepository,
+        });
+
+        // Action & Assert
+        await expect(
+            deleteCommentUseCase.execute(useCasePayload)
+        ).rejects.toThrowError('VALIDATION_COMMENT.NOT_THE_OWNER');
+
+        // Assert
+        expect(threadRepository.verifyAvailableThread).toBeCalledWith(
+            useCasePayload.threadId
+        );
+        expect(commentRepository.getCommentOwnerById).toBeCalledWith(
+            useCasePayload.commentId
+        );
         expect(commentRepository.deleteComment).not.toBeCalledWith();
     });
 });

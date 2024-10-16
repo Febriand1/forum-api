@@ -121,7 +121,7 @@ describe('AddReplyUseCase', () => {
 
         // mock function
         threadRepository.verifyAvailableThread = jest.fn(() =>
-            Promise.resolve()
+            Promise.resolve(false)
         );
         commentRepository.getCommentOwnerById = jest.fn(() =>
             Promise.resolve()
