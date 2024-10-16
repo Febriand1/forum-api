@@ -36,7 +36,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
         const result = await this._pool.query(query);
 
-        return new Reply({ ...result.rows[0] });
+        return new Reply(result.rows[0]);
     }
 
     async deleteReply(ReplyId) {
