@@ -5,116 +5,116 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const Comment = require('../../../Domains/comments/entities/Comment');
 
 describe('AddCommentUseCase', () => {
-    it('should orchestrating the add comment action correctly', async () => {
-        // Arrange
-        const owner = 'user-123';
-        const useCasePayload = {
-            content: 'new comment',
-            owner,
-            threadId: 'thread-123',
-        };
+  it('should orchestrating the add comment action correctly', async () => {
+    // Arrange
+    const owner = 'user-123';
+    const useCasePayload = {
+      content: 'new comment',
+      owner,
+      threadId: 'thread-123',
+    };
 
-        const commentRepository = new CommentRepository();
-        const threadRepository = new ThreadRepository();
+    const commentRepository = new CommentRepository();
+    const threadRepository = new ThreadRepository();
 
-        // mock function
-        threadRepository.verifyAvailableThread = jest.fn(() =>
-            Promise.resolve(true)
-        );
-        commentRepository.addComment = jest.fn(() =>
-            Promise.resolve(
-                new Comment({
-                    id: 'comment-123',
-                    content: useCasePayload.content,
-                    owner,
-                })
-            )
-        );
+    // mock function
+    threadRepository.verifyAvailableThread = jest.fn(() =>
+      Promise.resolve(true),
+    );
+    commentRepository.addComment = jest.fn(() =>
+      Promise.resolve(
+        new Comment({
+          id: 'comment-123',
+          content: useCasePayload.content,
+          owner,
+        }),
+      ),
+    );
 
-        // create use case instance
-        const addCommentUseCase = new AddCommentUseCase({
-            commentRepository,
-            threadRepository,
-        });
-
-        // Action
-        const comment = await addCommentUseCase.execute(useCasePayload);
-
-        // Assert
-        expect(comment).toStrictEqual(
-            new Comment({
-                id: 'comment-123',
-                content: useCasePayload.content,
-                owner,
-            })
-        );
-        expect(threadRepository.verifyAvailableThread).toBeCalledWith(
-            useCasePayload.threadId
-        );
-        expect(commentRepository.addComment).toBeCalledWith(
-            new AddComment(useCasePayload)
-        );
+    // create use case instance
+    const addCommentUseCase = new AddCommentUseCase({
+      commentRepository,
+      threadRepository,
     });
 
-    it('should throw error if use case payload not contain needed property', async () => {
-        // Arrange
-        const useCasePayload = {
-            threadId: 'thread-123',
-        };
+    // Action
+    const comment = await addCommentUseCase.execute(useCasePayload);
 
-        const commentRepository = new CommentRepository();
-        const threadRepository = new ThreadRepository();
+    // Assert
+    expect(comment).toStrictEqual(
+      new Comment({
+        id: 'comment-123',
+        content: useCasePayload.content,
+        owner,
+      }),
+    );
+    expect(threadRepository.verifyAvailableThread).toBeCalledWith(
+      useCasePayload.threadId,
+    );
+    expect(commentRepository.addComment).toBeCalledWith(
+      new AddComment(useCasePayload),
+    );
+  });
 
-        threadRepository.verifyAvailableThread = jest.fn(() =>
-            Promise.resolve(true)
-        );
-        commentRepository.addComment = jest.fn(() => Promise.resolve());
+  it('should throw error if use case payload not contain needed property', async () => {
+    // Arrange
+    const useCasePayload = {
+      threadId: 'thread-123',
+    };
 
-        const addCommentUseCase = new AddCommentUseCase({
-            commentRepository,
-            threadRepository,
-        });
+    const commentRepository = new CommentRepository();
+    const threadRepository = new ThreadRepository();
 
-        // Action & Assert
-        await expect(
-            addCommentUseCase.execute(useCasePayload)
-        ).rejects.toThrowError('ADD_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
+    threadRepository.verifyAvailableThread = jest.fn(() =>
+      Promise.resolve(true),
+    );
+    commentRepository.addComment = jest.fn(() => Promise.resolve());
 
-        expect(threadRepository.verifyAvailableThread).toBeCalledWith(
-            useCasePayload.threadId
-        );
-        expect(commentRepository.addComment).not.toBeCalledWith();
+    const addCommentUseCase = new AddCommentUseCase({
+      commentRepository,
+      threadRepository,
     });
 
-    it('should throw error if use case payload not meet data type specification', async () => {
-        // Arrange
-        const useCasePayload = {
-            content: 123,
-            owner: 123,
-            threadId: 'thread-123',
-        };
+    // Action & Assert
+    await expect(
+      addCommentUseCase.execute(useCasePayload),
+    ).rejects.toThrowError('ADD_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
 
-        const commentRepository = new CommentRepository();
-        const threadRepository = new ThreadRepository();
+    expect(threadRepository.verifyAvailableThread).toBeCalledWith(
+      useCasePayload.threadId,
+    );
+    expect(commentRepository.addComment).not.toBeCalledWith();
+  });
 
-        threadRepository.verifyAvailableThread = jest.fn(() =>
-            Promise.resolve(true)
-        );
-        commentRepository.addComment = jest.fn(() => Promise.resolve());
+  it('should throw error if use case payload not meet data type specification', async () => {
+    // Arrange
+    const useCasePayload = {
+      content: 123,
+      owner: 123,
+      threadId: 'thread-123',
+    };
 
-        const addCommentUseCase = new AddCommentUseCase({
-            commentRepository,
-            threadRepository,
-        });
+    const commentRepository = new CommentRepository();
+    const threadRepository = new ThreadRepository();
 
-        // Action & Assert
-        await expect(
-            addCommentUseCase.execute(useCasePayload)
-        ).rejects.toThrowError('ADD_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+    threadRepository.verifyAvailableThread = jest.fn(() =>
+      Promise.resolve(true),
+    );
+    commentRepository.addComment = jest.fn(() => Promise.resolve());
 
-        expect(threadRepository.verifyAvailableThread).toBeCalledWith(
-            useCasePayload.threadId
-        );
-        expect(commentRepository.addComment).not.toBeCalledWith();
+    const addCommentUseCase = new AddCommentUseCase({
+      commentRepository,
+      threadRepository,
     });
+
+    // Action & Assert
+    await expect(
+      addCommentUseCase.execute(useCasePayload),
+    ).rejects.toThrowError('ADD_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+
+    expect(threadRepository.verifyAvailableThread).toBeCalledWith(
+      useCasePayload.threadId,
+    );
+    expect(commentRepository.addComment).not.toBeCalledWith();
+  });
 });
