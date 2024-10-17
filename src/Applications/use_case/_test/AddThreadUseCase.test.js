@@ -4,88 +4,88 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const Thread = require('../../../Domains/threads/entities/Thread');
 
 describe('AddThreadUseCase', () => {
-    it('should orchestrating the add thread action correctly', async () => {
-        // Arrange
-        const owner = 'user-123';
-        const useCasePayload = {
-            title: 'Super Title',
-            body: 'Super Body',
-            owner,
-        };
+  it('should orchestrating the add thread action correctly', async () => {
+    // Arrange
+    const owner = 'user-123';
+    const useCasePayload = {
+      title: 'Super Title',
+      body: 'Super Body',
+      owner,
+    };
 
-        const mockThreadRepository = new ThreadRepository();
+    const mockThreadRepository = new ThreadRepository();
 
-        mockThreadRepository.addThread = jest.fn(() =>
-            Promise.resolve(
-                new Thread({
-                    id: 'thread-123',
-                    title: useCasePayload.title,
-                    owner,
-                })
-            )
-        );
+    mockThreadRepository.addThread = jest.fn(() =>
+      Promise.resolve(
+        new Thread({
+          id: 'thread-123',
+          title: useCasePayload.title,
+          owner,
+        }),
+      ),
+    );
 
-        const addThreadUseCase = new AddThreadUseCase({
-            threadRepository: mockThreadRepository,
-        });
-
-        // Action
-        const addedThread = await addThreadUseCase.execute(useCasePayload);
-
-        // Assert
-        expect(addedThread).toStrictEqual(
-            new Thread({
-                id: 'thread-123',
-                title: useCasePayload.title,
-                owner,
-            })
-        );
-        expect(mockThreadRepository.addThread).toBeCalledWith(
-            new AddThread(useCasePayload)
-        );
+    const addThreadUseCase = new AddThreadUseCase({
+      threadRepository: mockThreadRepository,
     });
 
-    it('should throw error if use case payload not contain needed property', async () => {
-        // Arrange
-        const useCasePayload = {};
+    // Action
+    const addedThread = await addThreadUseCase.execute(useCasePayload);
 
-        const mockThreadRepository = new ThreadRepository();
+    // Assert
+    expect(addedThread).toStrictEqual(
+      new Thread({
+        id: 'thread-123',
+        title: useCasePayload.title,
+        owner,
+      }),
+    );
+    expect(mockThreadRepository.addThread).toBeCalledWith(
+      new AddThread(useCasePayload),
+    );
+  });
 
-        mockThreadRepository.addThread = jest.fn(() => Promise.resolve());
+  it('should throw error if use case payload not contain needed property', async () => {
+    // Arrange
+    const useCasePayload = {};
 
-        const addThreadUseCase = new AddThreadUseCase({
-            threadRepository: mockThreadRepository,
-        });
+    const mockThreadRepository = new ThreadRepository();
 
-        // Action & Assert
-        await expect(
-            addThreadUseCase.execute(useCasePayload)
-        ).rejects.toThrowError('ADD_THREAD.NOT_CONTAIN_NEEDED_PROPERTY');
+    mockThreadRepository.addThread = jest.fn(() => Promise.resolve());
 
-        expect(mockThreadRepository.addThread).not.toHaveBeenCalled();
+    const addThreadUseCase = new AddThreadUseCase({
+      threadRepository: mockThreadRepository,
     });
 
-    it('should throw error if use case payload not meet data type specification', async () => {
-        // Arrange
-        const owner = 'user-123';
-        const useCasePayload = {
-            title: 123,
-            body: 123,
-            owner,
-        };
-        const mockThreadRepository = new ThreadRepository();
+    // Action & Assert
+    await expect(addThreadUseCase.execute(useCasePayload)).rejects.toThrowError(
+      'ADD_THREAD.NOT_CONTAIN_NEEDED_PROPERTY',
+    );
 
-        mockThreadRepository.addThread = jest.fn(() => Promise.resolve());
+    expect(mockThreadRepository.addThread).not.toHaveBeenCalled();
+  });
 
-        const addThreadUseCase = new AddThreadUseCase({
-            threadRepository: mockThreadRepository,
-        });
+  it('should throw error if use case payload not meet data type specification', async () => {
+    // Arrange
+    const owner = 'user-123';
+    const useCasePayload = {
+      title: 123,
+      body: 123,
+      owner,
+    };
+    const mockThreadRepository = new ThreadRepository();
 
-        // Action & Assert
-        await expect(
-            addThreadUseCase.execute(useCasePayload)
-        ).rejects.toThrowError('ADD_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
+    mockThreadRepository.addThread = jest.fn(() => Promise.resolve());
 
-        expect(mockThreadRepository.addThread).not.toHaveBeenCalled();
+    const addThreadUseCase = new AddThreadUseCase({
+      threadRepository: mockThreadRepository,
     });
+
+    // Action & Assert
+    await expect(addThreadUseCase.execute(useCasePayload)).rejects.toThrowError(
+      'ADD_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION',
+    );
+
+    expect(mockThreadRepository.addThread).not.toHaveBeenCalled();
+  });
 });
