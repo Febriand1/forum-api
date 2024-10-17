@@ -57,6 +57,7 @@ describe('a CommentId entities', () => {
       username: 'user-123',
       date: new Date(),
       content: 'abc',
+      likeCount: 0,
       replies: [],
       isDelete: true,
     });

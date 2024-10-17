@@ -100,6 +100,13 @@ DomainErrorTranslator._directories = {
   'VALIDATION_COMMENT.NOT_THE_OWNER': new AuthorizationError(
     'anda bukan pemilik komentar ini',
   ),
+
+  'NEW_LIKE.NOT_CONTAIN_NEEDED_PARAMETER': new InvariantError(
+    'tidak dapat membuat like baru karena parameter yang dibutuhkan tidak ada',
+  ),
+  'NEW_LIKE.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError(
+    'tidak dapat membuat like baru karena tipe data tidak sesuai',
+  ),
 };
 
 module.exports = DomainErrorTranslator;
