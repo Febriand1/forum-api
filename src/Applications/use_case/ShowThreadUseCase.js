@@ -3,10 +3,16 @@ const CommentId = require('../../Domains/comments/entities/CommentId');
 const ReplyId = require('../../Domains/replies/entities/ReplyId');
 
 class ShowThreadUseCase {
-  constructor({ threadRepository, commentRepository, replyRepository }) {
+  constructor({
+    threadRepository,
+    commentRepository,
+    replyRepository,
+    likeRepository,
+  }) {
     this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
     this._replyRepository = replyRepository;
+    this._likeRepository = likeRepository;
   }
 
   async execute(threadId) {
@@ -30,12 +36,16 @@ class ShowThreadUseCase {
     });
 
     for (const commentData of commentsData) {
+      const likeCount = await this._likeRepository.getLikesCount(
+        commentData.id,
+      );
       const comment = new CommentId({
         id: commentData.id,
         username: commentData.username,
         date: commentData.date,
         replies: [],
         content: commentData.content,
+        likeCount,
         isDelete: commentData.is_delete,
       });
 

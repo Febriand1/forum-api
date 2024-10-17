@@ -5,6 +5,7 @@ const ReplyId = require('../../../Domains/replies/entities/ReplyId');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
+const LikeRepository = require('../../../Domains/likes/LikeRepository');
 
 describe('ShowThreadUseCase', () => {
   it('should orchestrating the show thread action correctly', async () => {
@@ -15,6 +16,7 @@ describe('ShowThreadUseCase', () => {
     const threadRepository = new ThreadRepository();
     const commentRepository = new CommentRepository();
     const replyRepository = new ReplyRepository();
+    const likeRepository = new LikeRepository();
 
     // mock function
     threadRepository.verifyAvailableThread = jest.fn(() =>
@@ -38,6 +40,7 @@ describe('ShowThreadUseCase', () => {
         is_delete: false,
       },
     ]);
+    likeRepository.getLikesCount = jest.fn(() => 0);
     replyRepository.getReplyByCommentId = jest.fn(() => [
       {
         id: 'reply-123',
@@ -52,6 +55,7 @@ describe('ShowThreadUseCase', () => {
       threadRepository,
       commentRepository,
       replyRepository,
+      likeRepository,
     });
 
     // Action
@@ -80,6 +84,7 @@ describe('ShowThreadUseCase', () => {
               }),
             ],
             content: 'Super Comment',
+            likeCount: 0,
             isDelete: false,
           }),
         ],
@@ -93,6 +98,7 @@ describe('ShowThreadUseCase', () => {
     expect(commentRepository.getCommentByThreadId).toBeCalledWith(
       useCasePayload,
     );
+    expect(likeRepository.getLikesCount).toBeCalledWith('comment-123');
     expect(replyRepository.getReplyByCommentId).toBeCalledWith('comment-123');
   });
 
@@ -103,18 +109,21 @@ describe('ShowThreadUseCase', () => {
     const threadRepository = new ThreadRepository();
     const commentRepository = new CommentRepository();
     const replyRepository = new ReplyRepository();
+    const likeRepository = new LikeRepository();
 
     threadRepository.verifyAvailableThread = jest.fn(() =>
       Promise.resolve(true),
     );
     threadRepository.getThreadById = jest.fn(() => Promise.resolve());
     commentRepository.getCommentByThreadId = jest.fn(() => []);
+    likeRepository.getLikesCount = jest.fn(() => 0);
     replyRepository.getReplyByCommentId = jest.fn(() => []);
 
     const showThreadUseCase = new ShowThreadUseCase({
       threadRepository,
       commentRepository,
       replyRepository,
+      likeRepository,
     });
 
     // Action & Assert
@@ -127,6 +136,7 @@ describe('ShowThreadUseCase', () => {
     );
     expect(threadRepository.getThreadById).not.toBeCalledWith();
     expect(commentRepository.getCommentByThreadId).not.toBeCalledWith();
+    expect(likeRepository.getLikesCount).not.toBeCalledWith();
     expect(replyRepository.getReplyByCommentId).not.toBeCalledWith();
   });
 });
