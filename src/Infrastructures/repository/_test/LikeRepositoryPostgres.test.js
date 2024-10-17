@@ -166,7 +166,7 @@ describe('LikeRepositoryPostgres', () => {
       );
 
       // Assert
-      expect(likeCount).toStrictEqual({ likeCount: 2 });
+      expect(likeCount).toStrictEqual(2);
     });
   });
 });
